@@ -475,7 +475,7 @@ function setsTable(keys){
       return `<tr>
         <td class="no" data-th="번호">${String(setNo(k)).padStart(2,"0")}</td>
         <td class="l cpt ${d?"":"lock"}" data-th="공통 개념">${d ? esc(SETS[k].concept) : "풀면 공개"}</td>
-        <td class="l f" data-th="분야"><span>${FIELDS[k].map(f => `<span class="tag">${esc(f)}</span>`).join("")}</span></td>
+        <td class="l f ${d?"":"cpt lock"}" data-th="분야">${d ? `<span>${FIELDS[k].map(f => `<span class="tag">${esc(f)}</span>`).join("")}</span>` : "풀면 공개"}</td>
         <td class="mh" data-th="구성">제시문 ${PASSAGES[k].length} · 문항 ${SETS[k].qa.length}</td>
         <td class="stc" data-th="상태"><span class="st ${live?"live":d?"done":"todo"}">${live ? "푸는 중" : d ? "완료" : "미응시"}</span></td>
         <td class="mh" data-th="풀이일">${d ? fmtDate(d.at) : "-"}</td>
