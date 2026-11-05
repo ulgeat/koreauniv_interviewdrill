@@ -123,7 +123,7 @@ footer{font-size:12px;color:var(--muted);max-width:80ch}
           <button class="btn" id="hlClear" type="button">형광펜 지우기</button>
           <button class="btn" id="srcBtn" type="button">출처 보기</button>
         </div>
-        <span class="note">원문 무수정 발췌 · 중략은 ⋯ 표시</span>
+        <span class="note">원문 무수정 발췌</span>
       </div>
       <div id="passages"></div>
     </section>
@@ -141,7 +141,7 @@ footer{font-size:12px;color:var(--muted);max-width:80ch}
       <div class="qs" id="qs"></div>
     </aside>
   </div>
-  <footer>제시문 출처: 한국어 위키백과(CC BY-SA 4.0). 기출 분량(약 200자)에 맞춰 원문 문장을 한 글자도 바꾸지 않고 발췌했으며, 중간을 건너뛴 곳은 ⋯ 로 표시했습니다. 출처는 「출처 보기」를 누르면 각 제시문 아래에 표시됩니다(문서 제목이 힌트가 될 수 있어 기본으로 숨김). 처음 열 때와 「무작위 세트 뽑기」를 누를 때는 아직 답안을 쓰지 않은 세트가 우선 선택됩니다.</footer>
+  <footer>제시문 출처: 한국어 위키백과(CC BY-SA 4.0). 기출 분량(약 200자)에 맞춰 원문 문장을 한 글자도 바꾸지 않고 발췌했습니다. 출처는 「출처 보기」를 누르면 각 제시문 아래에 표시됩니다(문서 제목이 힌트가 될 수 있어 기본으로 숨김). 처음 열 때와 「무작위 세트 뽑기」를 누를 때는 아직 답안을 쓰지 않은 세트가 우선 선택됩니다.</footer>
 </div>
 
 <script>
@@ -191,7 +191,7 @@ function renderPassages(){
   PASSAGES[cur].forEach((p,i) => {
     const d = document.createElement("article");
     d.className = "passage";
-    const body = p.blocks.map(b => b.t === "h" ? `<h4>${esc(b.x)}</h4>` : b.t === "gap" ? `<div class="gap">⋯ 중략 ⋯</div>` : `<p>${esc(b.x)}</p>`).join("");
+    const body = p.blocks.map(b => b.t === "h" ? `<h4>${esc(b.x)}</h4>` : b.t === "gap" ? "" : `<p>${esc(b.x)}</p>`).join("");
     d.innerHTML = `<div class="plabel">(${LABELS[i]})</div><div class="ptext">${body}${showSrc ? `<div class="src">출처: <a href="${p.url}" target="_blank" rel="noopener">위키백과 「${esc(p.src)}」</a></div>` : ""}</div>`;
     box.appendChild(d);
   });
