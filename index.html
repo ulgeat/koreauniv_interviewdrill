@@ -245,7 +245,9 @@ textarea:focus{border-color:var(--primary);outline:none}
 .whead h3{font-size:20px;font-weight:900;letter-spacing:-.02em}
 .whead .hj{font-family:var(--serif);color:var(--sub);font-size:14px}
 .whead .badges{margin-left:auto;display:flex;gap:4px}
-.star{appearance:none;border:0;background:transparent;color:var(--sub);font-size:22px;line-height:1;padding:2px 4px;cursor:pointer;align-self:flex-end;margin-top:auto}
+.wfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid var(--rule)}
+.wfoot .badges{margin-left:0}
+.star{appearance:none;border:0;background:transparent;color:var(--sub);font-size:20px;line-height:1;padding:2px 4px;margin:-4px -4px -4px 0;cursor:pointer}
 .star:hover{color:#D9A400}
 .star.on{color:#E0A800}
 .star:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:3px}
@@ -730,12 +732,12 @@ function viewWords(){
   function card(w, names){
     const pair = (w.pair || []).map(p => names.has(p) ? `<button class="linkchip" type="button" data-goto="${esc(p)}">${esc(p)}</button>` : `<span class="plainchip">${esc(p)}</span>`).join("");
     return `<article class="wcard ${w.tier}">
-      <div class="whead"><h3>${esc(w.w)}</h3>${w.hj ? `<span class="hj">${esc(w.hj)}</span>` : ""}<span class="badges"><span class="badge ${w.tier}">${TIER_NAME[w.tier]}</span><span class="badge cat">${esc(w.cat)}</span></span></div>
+      <div class="whead"><h3>${esc(w.w)}</h3>${w.hj ? `<span class="hj">${esc(w.hj)}</span>` : ""}</div>
       <p class="mean">${esc(w.mean)}</p>
       <dl><dt>과학·수학</dt><dd>${esc(w.sci)}</dd><dt>사회</dt><dd>${esc(w.soc)}</dd>${pair ? `<dt>함께 볼 말</dt><dd>${pair}</dd>` : ""}</dl>
       ${w.exam ? `<p class="exam-note"><b>기출</b>${w.ok ? '<span class="okb">대학 자료 확인</span>' : '<span class="unv">공식 답안 미확인</span>'} ${esc(w.exam)}</p>` : ""}
       ${w.set ? `<p style="margin:0;font-size:13px">세트 ${setNo(w.set)}에서 얻은 단어 · <a href="#/result/${w.set}">해설 보기</a></p>` : ""}
-      <button class="star${stars.has(w.w) ? " on" : ""}" type="button" data-star="${esc(w.w)}" aria-pressed="${stars.has(w.w)}" aria-label="${esc(w.w)} ${stars.has(w.w) ? "별표 빼기" : "별표 하기"}">${stars.has(w.w) ? "★" : "☆"}</button>
+      <div class="wfoot"><span class="badges"><span class="badge ${w.tier}">${TIER_NAME[w.tier]}</span><span class="badge cat">${esc(w.cat)}</span></span><button class="star${stars.has(w.w) ? " on" : ""}" type="button" data-star="${esc(w.w)}" aria-pressed="${stars.has(w.w)}" aria-label="${esc(w.w)} ${stars.has(w.w) ? "별표 빼기" : "별표 하기"}">${stars.has(w.w) ? "★" : "☆"}</button></div>
     </article>`;
   }
 }
