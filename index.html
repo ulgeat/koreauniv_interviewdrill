@@ -245,6 +245,10 @@ textarea:focus{border-color:var(--primary);outline:none}
 .whead h3{font-size:20px;font-weight:900;letter-spacing:-.02em}
 .whead .hj{font-family:var(--serif);color:var(--sub);font-size:14px}
 .whead .badges{margin-left:auto;display:flex;gap:4px}
+.star{appearance:none;border:0;background:transparent;color:var(--sub);font-size:22px;line-height:1;padding:2px 4px;cursor:pointer;align-self:center}
+.star:hover{color:#D9A400}
+.star.on{color:#E0A800}
+.star:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:3px}
 .badge{font-size:11.5px;font-weight:700;border-radius:3px;padding:1px 7px;white-space:nowrap}
 .badge.g{color:var(--g);background:var(--g-soft)}
 .badge.c{color:var(--c);background:var(--c-soft)}
@@ -335,6 +339,9 @@ const J = {
 const K_DONE = "kid2-done", K_MINS = "kid2-mins", K_RUN = "kid2-run", K_HIST = "kid2-hist";
 const ansKey = (k,i) => `ans-${k}-${i}`;
 let done = J.get(K_DONE, {});
+const K_STAR = "kid2-stars";
+let stars = new Set(J.get(K_STAR, []));
+function toggleStar(w){ if (stars.has(w)) stars.delete(w); else stars.add(w); J.set(K_STAR, [...stars]); }
 let pickedMins = MINUTES.includes(+store.get(K_MINS)) ? +store.get(K_MINS) : 14;
 
 /* 도우미 */
@@ -675,7 +682,7 @@ function viewWords(){
   setNav("words");
   const vis = allVisibleWords();
   const lockedN = CORE.length - unlockedCore().length;
-  const counts = {all: vis.length, g: PUB.gichul.length, c: unlockedCore().length, e: PUB.extra.length};
+  const counts = {all: vis.length, g: PUB.gichul.length, c: unlockedCore().length, e: PUB.extra.length, s: vis.filter(w => stars.has(w.w)).length};
   app.innerHTML = `
   ${pageTitle("단어장")}
   <details class="box note-box" ${matchMedia("(min-width:700px)").matches ? "open" : ""}>
@@ -683,7 +690,7 @@ function viewWords(){
     <div class="box-b">${PUB.note.map(p => `<p>${esc(p)}</p>`).join("")}</div>
   </details>
   <div class="tabs" role="tablist">
-    ${[["all","전체"],["g","기출"],["c","핵심"],["e","더 알아두기"]].map(([v,n]) => `<button role="tab" type="button" data-tier="${v}" aria-selected="${wf.tier===v}">${n}<span class="n">${counts[v]}</span></button>`).join("")}
+    ${[["all","전체"],["g","기출"],["c","핵심"],["e","더 알아두기"],["s","★ 별표"]].map(([v,n]) => `<button role="tab" type="button" data-tier="${v}" aria-selected="${wf.tier===v}">${n}<span class="n">${counts[v]}</span></button>`).join("")}
   </div>
   <section class="fbar">
     <div class="cats" role="group" aria-label="분류">
@@ -702,21 +709,28 @@ function viewWords(){
   function drawWords(){
     const names = new Set(vis.map(w => w.w));
     const q = wf.q.trim().toLowerCase();
-    const list = vis.filter(w => (wf.tier === "all" || w.tier === wf.tier) && (wf.cat === "all" || w.cat === wf.cat) &&
+    const list = vis.filter(w => (wf.tier === "all" || (wf.tier === "s" ? stars.has(w.w) : w.tier === wf.tier)) && (wf.cat === "all" || w.cat === wf.cat) &&
       (!q || [w.w, w.hj, w.mean, w.sci, w.soc, w.exam || "", (w.pair||[]).join(" ")].join(" ").toLowerCase().includes(q)));
     list.sort((a,b) => ((b.w === wf.q.trim()) - (a.w === wf.q.trim())) || ((b.fit ?? -99) - (a.fit ?? -99)));
     const showLocked = lockedN > 0 && (wf.tier === "all" || wf.tier === "c") && !q;
     $("#wcount").innerHTML = `검색 결과 <b>${list.length}</b>개`;
     const grid = $("#wgrid");
     grid.innerHTML = (showLocked ? `<div class="locked-card"><b>${lockedN}</b><span>열리지 않은 핵심 단어</span><button class="btn pri sm" type="button" id="goRun" style="align-self:flex-start">모의면접 시작하기</button></div>` : "")
-      + (list.length ? list.map(w => card(w, names)).join("") : (showLocked ? "" : `<div class="empty-state">조건에 맞는 단어가 없습니다.</div>`));
+      + (list.length ? list.map(w => card(w, names)).join("") : (showLocked ? "" : (wf.tier === "s" && !stars.size ? `<div class="empty-state">별표한 단어가 없습니다. 단어 카드 오른쪽 위의 ☆를 누르면 여기에 모입니다.</div>` : `<div class="empty-state">조건에 맞는 단어가 없습니다.</div>`)));
     const g = $("#goRun"); if (g) g.onclick = () => startRandom();
+    grid.querySelectorAll("[data-star]").forEach(b => b.onclick = () => {
+      const w = b.dataset.star; toggleStar(w);
+      const on = stars.has(w); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); b.textContent = on ? "★" : "☆";
+      b.setAttribute("aria-label", on ? `${w} 별표 빼기` : `${w} 별표 하기`);
+      const n = app.querySelector('[data-tier="s"] .n'); if (n) n.textContent = vis.filter(x => stars.has(x.w)).length;
+      if (wf.tier === "s") drawWords();
+    });
     grid.querySelectorAll("[data-goto]").forEach(b => b.onclick = () => { wf.q = b.dataset.goto; wf.tier = "all"; wf.cat = "all"; viewWords(); window.scrollTo({top:0, behavior:"smooth"}); });
   }
   function card(w, names){
     const pair = (w.pair || []).map(p => names.has(p) ? `<button class="linkchip" type="button" data-goto="${esc(p)}">${esc(p)}</button>` : `<span class="plainchip">${esc(p)}</span>`).join("");
     return `<article class="wcard ${w.tier}">
-      <div class="whead"><h3>${esc(w.w)}</h3>${w.hj ? `<span class="hj">${esc(w.hj)}</span>` : ""}<span class="badges"><span class="badge ${w.tier}">${TIER_NAME[w.tier]}</span><span class="badge cat">${esc(w.cat)}</span></span></div>
+      <div class="whead"><h3>${esc(w.w)}</h3>${w.hj ? `<span class="hj">${esc(w.hj)}</span>` : ""}<span class="badges"><span class="badge ${w.tier}">${TIER_NAME[w.tier]}</span><span class="badge cat">${esc(w.cat)}</span></span><button class="star${stars.has(w.w) ? " on" : ""}" type="button" data-star="${esc(w.w)}" aria-pressed="${stars.has(w.w)}" aria-label="${esc(w.w)} ${stars.has(w.w) ? "별표 빼기" : "별표 하기"}">${stars.has(w.w) ? "★" : "☆"}</button></div>
       <p class="mean">${esc(w.mean)}</p>
       <dl><dt>과학·수학</dt><dd>${esc(w.sci)}</dd><dt>사회</dt><dd>${esc(w.soc)}</dd>${pair ? `<dt>함께 볼 말</dt><dd>${pair}</dd>` : ""}</dl>
       ${w.exam ? `<p class="exam-note"><b>기출</b>${w.ok ? '<span class="okb">대학 자료 확인</span>' : '<span class="unv">공식 답안 미확인</span>'} ${esc(w.exam)}</p>` : ""}
